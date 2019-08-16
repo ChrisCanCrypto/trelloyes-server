@@ -8,6 +8,7 @@ const { NODE_ENV } = require('./config');
 const uuid = require('uuid/v4');
 const cardRouter = require('./card/card-router');
 const listRouter = require('./list/list-router');
+const logger = require('./logger');
 
 // App setup
 const app = express();
@@ -30,13 +31,13 @@ app.use(function validateBearerToken(req, res, next) {
 	next();
 });
 
-app.use(cardRouter);
-app.use(listRouter);
-
 // Server Endpoints
 app.get('/', (req, res) => {
 	res.send('Hello, trelloyes!');
 });
+
+app.use(cardRouter);
+app.use(listRouter);
 
 // Error handling
 app.use(function errorHandler(error, req, res, next) {
