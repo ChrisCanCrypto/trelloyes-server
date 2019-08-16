@@ -74,6 +74,8 @@ app.get('/list', handleGetLists);
 
 app.get('/list/:id', handleGetListWithId);
 
+app.post('/list', handlePostNewList);
+
 // Server Functions
 
 function handleGetCards(req, res) {
@@ -134,6 +136,46 @@ function handleGetListWithId(req, res) {
 	}
 
 	res.json(list);
+}
+
+function handlePostNewList(req, res) {
+	const { header, cardIds = [] } = req.body;
+
+	if (!header) {
+		logger.error('Header is required');
+		return res.status(400).send('Invalid data, header is required');
+	}
+
+	if (cardIds.length > 0) {
+		let valid = true;
+		cardIds.forEach(cid => {
+			const card = cards.find(c => c.id == cid);
+			if (!card) {
+				logger.error(`Card with id ${cid} not found in the cards array.`);
+				valid = false;
+			}
+		});
+
+		if (!valid) {
+			return res.status(400).send('invalid data');
+		}
+	}
+
+	const id = uuid();
+
+	const newList = {
+		id,
+		header,
+		cardIds
+	};
+
+	lists.push(newList);
+
+	logger.info(`List with id ${id} created`);
+
+	res.status(201)
+		.location(`http://localhost:8000/list/${id}`)
+		.json({ id });
 }
 
 // Error handling
