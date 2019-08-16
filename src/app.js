@@ -70,11 +70,15 @@ app.get('/card/:id', handleGetCardWithId);
 
 app.post('/card', handlePostNewCard);
 
+app.delete('/card/:id', handleDeleteCardWithId);
+
 app.get('/list', handleGetLists);
 
 app.get('/list/:id', handleGetListWithId);
 
 app.post('/list', handlePostNewList);
+
+app.delete('/list/:id', handleDeleteListWithId);
 
 // Server Functions
 
@@ -120,6 +124,28 @@ function handlePostNewCard(req, res) {
 	res.status(201)
 		.location(`http://localhost:8000/card/${id}`)
 		.json(newCard);
+}
+
+function handleDeleteCardWithId(req, res) {
+	const { id } = req.params;
+
+	const cardIndex = cards.findIndex(c => c.id == id);
+
+	if (cardIndex === -1) {
+		logger.error(`Card with id ${id} not found.`);
+		return res.status(404).send('Card Not Found');
+	}
+
+	lists.forEach(list => {
+		const cardIds = list.cardIds.filter(cid => cid !== id);
+		list.cardIds = cardIds;
+	});
+
+	cards.splice(cardIndex, 1);
+
+	logger.info(`Card with id ${id} deleted.`);
+
+	res.status(204).end();
 }
 
 function handleGetLists(req, res) {
@@ -176,6 +202,22 @@ function handlePostNewList(req, res) {
 	res.status(201)
 		.location(`http://localhost:8000/list/${id}`)
 		.json({ id });
+}
+
+function handleDeleteListWithId(req, res) {
+	const { id } = req.params;
+
+	const listIndex = lists.findIndex(li => li.id == id);
+
+	if (listIndex === -1) {
+		logger.error(`List with id ${id} not found.`);
+		return res.status(404).send('List Not Found');
+	}
+
+	lists.splice(listIndex, 1);
+
+	logger.info(`List with id ${id} deleted.`);
+	res.status(204).end();
 }
 
 // Error handling
