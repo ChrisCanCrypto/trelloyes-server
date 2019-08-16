@@ -6,12 +6,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const winston = require('winston');
 const { NODE_ENV } = require('./config');
+const uuid = require('uuid/v4');
 
 const app = express();
 const morganOption = NODE_ENV === 'production' ? 'tiny' : 'common';
 app.use(morgan(morganOption));
-app.use(helmet());
 app.use(cors());
+app.use(helmet());
+app.use(express.json());
 
 // winston setup
 const logger = winston.createLogger({
@@ -66,6 +68,8 @@ app.get('/card', handleGetCards);
 
 app.get('/card/:id', handleGetCardWithId);
 
+app.post('/card', handlePostNewCard);
+
 app.get('/list', handleGetLists);
 
 app.get('/list/:id', handleGetListWithId);
@@ -86,6 +90,34 @@ function handleGetCardWithId(req, res) {
 	}
 
 	res.json(card);
+}
+
+function handlePostNewCard(req, res) {
+	const { title, content } = req.body;
+
+	if (!title) {
+		logger.error(`Title is required`);
+		return res.status(400).send('Invalid data, card must have title');
+	}
+
+	if (!content) {
+		logger.error(`Content is required`);
+		return res.status(400).send('Invalid data, Card must have content');
+	}
+
+	const id = uuid();
+	const newCard = {
+		id,
+		title,
+		content
+	};
+	cards.push(newCard);
+
+	logger.info(`Card with id ${id} created`);
+
+	res.status(201)
+		.location(`http://localhost:8000/card/${id}`)
+		.json(newCard);
 }
 
 function handleGetLists(req, res) {
