@@ -68,6 +68,8 @@ app.get('/card/:id', handleGetCardWithId);
 
 app.get('/list', handleGetLists);
 
+app.get('/list/:id', handleGetListWithId);
+
 // Server Functions
 
 function handleGetCards(req, res) {
@@ -88,6 +90,18 @@ function handleGetCardWithId(req, res) {
 
 function handleGetLists(req, res) {
 	res.json(lists);
+}
+
+function handleGetListWithId(req, res) {
+	const { id } = req.params;
+	const list = lists.find(list => list.id == id);
+
+	if (!list) {
+		logger.error(`List with id ${id} not found`);
+		return res.status(404).send('List Not Found');
+	}
+
+	res.json(list);
 }
 
 // Error handling
